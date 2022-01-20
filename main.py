@@ -9,7 +9,9 @@ clock = pygame.time.Clock()
 particleNum = 50
 particlePos = [[0 for i in range(5)] for j in range(50)]
 flagSpin = False
-
+flagAttract = False
+flagRepel = False
+xClick, yClick = 0, 0
 
 def set_text(string, coordx, coordy, fontSize):
     font = pygame.font.Font('freesansbold.ttf', fontSize)
@@ -39,9 +41,8 @@ def draw_particle(x, y, i):
 
 for i in range(len(particlePos)):
     particlePos[i][0] = random.randint(1, 1399)
-    particlePos[i][1] = random.randint(1, 799)  # todo sterge final duten sperma
-    particlePos[i][2] = random.randint(1,
-                                       369)  # todo la inceput nu sunt particule tu le spawnezi tastatura si jucarie maus pe langa repel/attract
+    particlePos[i][1] = random.randint(1, 799)
+    particlePos[i][2] = random.randint(1, 369)
     particlePos[i][3] = 0.2
     particlePos[i][4] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
@@ -88,34 +89,82 @@ while running:
             if event.key == pygame.K_h:
                 flagSpin = True
         if event.type == pygame.MOUSEBUTTONDOWN:
-            xClick, yClick = pygame.mouse.get_pos()
-        else:
-            xClick, yClick = 0, 0
+            if event.button == 1:
+                flagAttract = True
+            if event.button == 3:
+                flagRepel = True
+        if event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:
+                flagAttract = False
+            if event.button == 3:
+                flagRepel = False
+
 
     if flagSpin:
         for i in range(len(particlePos)):
             particlePos[i][2] = normalize_angle(particlePos[i][2] + 20)
 
     # todo aici tool maus jucarie gen chestie manevra blana bombao
+    # todo amundoua sunt cam belite ajutor
 
     # jucarie maus
-    if xClick != 0 or yClick != 0:
+    if flagAttract:
         for i in range(len(particlePos)):
-            particlePos[i][2] = normalize_angle(particlePos[i][2] + 20)
+            xClick, yClick = pygame.mouse.get_pos()
+
+            pct1 = (particlePos[i][0], particlePos[i][1])
+            pct2 = (xClick, yClick)
+            pct3 = (particlePos[i][0] + 1, particlePos[i][1])
+
+            d12 = math.sqrt((pct1[0] - pct2[0]) ** 2 + (pct1[1] - pct2[1]) ** 2)
+            d13 = 1
+            d23 = math.sqrt((pct2[0] - pct3[0]) ** 2 + (pct2[1] - pct3[1]) ** 2)
+
+            diferenta = math.acos((d12 ** 2 + 1 - d23 ** 2) / (2 * d12 * d13))
+
+            if xClick < particlePos[i][0] and yClick < particlePos[i][1]:
+                diferenta = normalize_angle(-math.degrees(diferenta) - particlePos[i][2])
+                diferenta = diferenta
+            else:
+                diferenta = normalize_angle(math.degrees(diferenta) - particlePos[i][2])
+                diferenta = diferenta
+
+            particlePos[i][2] = normalize_angle(particlePos[i][2] + diferenta / 2)
+
+    if flagRepel:
+        for i in range(len(particlePos)):
+            xClick, yClick = pygame.mouse.get_pos()
+
+            pct1 = (particlePos[i][0], particlePos[i][1])
+            pct2 = (xClick, yClick)
+            pct3 = (particlePos[i][0] + 1, particlePos[i][1])
+
+            d12 = math.sqrt((pct1[0] - pct2[0]) ** 2 + (pct1[1] - pct2[1]) ** 2)
+            d13 = 1
+            d23 = math.sqrt((pct2[0] - pct3[0]) ** 2 + (pct2[1] - pct3[1]) ** 2)
+
+            diferenta = math.acos((d12 ** 2 + 1 - d23 ** 2) / (2 * d12 * d13))
+
+            if xClick < particlePos[i][0] and yClick < particlePos[i][1]:
+                diferenta = normalize_angle(-math.degrees(diferenta-180) - particlePos[i][2])
+                diferenta = diferenta
+            else:
+                diferenta = normalize_angle(math.degrees(diferenta-180) - particlePos[i][2])
+                diferenta = diferenta
+
+            particlePos[i][2] = normalize_angle(particlePos[i][2] + diferenta / 2)
 
     while particleNum > len(particlePos):
         particlePos.append(generate_particle())
     while particleNum < len(particlePos):
         particlePos.pop()
 
-    screen.fill((0, 0, 0))
+    screen.fill((50, 50, 50))
 
     for i in range(len(particlePos)):
-        # todo click pe ecran click stanga si dreapta pt repel and attract (pozitia todo gresita in control loop)
-        # todo poate si un fel de slingshot cu mausul gen click trage si apoi lanseaza in directia aia
+        # todo slingshot cu mausul gen click trage si apoi lanseaza in directia aia
         # coliziune cu pretii
-        # todo e belit tot trebe rescris dupa unghi si poz nu numai pos, nu uita de random pt efect jmk
-        # todo de fapt trebuie sa calculez unghiul cu care loveste peretele si deflectia de acolo
+        # todo idk inca e belit ceva trebuie vazut
 
         if particlePos[i][0] > 1400 and particlePos[i][2] == 0:
             particlePos[i][2] = 181
