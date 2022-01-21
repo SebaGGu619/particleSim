@@ -5,6 +5,7 @@ import random
 
 pygame.init()
 screen = pygame.display.set_mode((1400, 800))
+pygame.display.set_caption('Simulator Particule')
 clock = pygame.time.Clock()
 particleNum = 200
 particlePos = [[0 for i in range(5)] for j in range(50)]
@@ -14,11 +15,43 @@ flagRepel = False
 flagInertie = False
 xClick, yClick = 0, 0
 unghiJucarieK = 0
+flagCuloare = False
+toggleHelp = False
+
+marimeParticula = 5
+
+r = 255
+g = 0
+b = 0
+rDir = 2
+gDir = 1
+bDir = 1
+pasRGB = 0
+
+culoareParticulaIndex = 0
+culoriParticule = [["Rainbow", (0, 0, 0)],
+                   ["Rave", (0, 0, 0)],
+                   ["Alb", (255, 255, 255)],
+                   ["Negru", (0, 0, 0)],
+                   ["Albastru", (102, 255, 255)],
+                   ["Verde", (204, 255, 204)],
+                   ["Roz", (255, 102, 153)]
+                   ]
+
+culoareFundalIndex = 0
+culoriFundal = [["Gri", (50, 50, 50), (255, 255, 255)],
+                ["Negru", (0, 0, 0), (255, 255, 255)],
+                ["Alb", (255, 255, 255), (0, 0, 0)],
+                ["Verde", (153, 255, 153), (0, 153, 51)],
+                ["Albastru", (102, 255, 255), (0, 102, 153)],
+                ["Rainbow", (0, 0, 0), (255, 255, 255)],
+                ["Desen", (0, 0, 0), (0, 0, 0)]
+                ]
 
 
 def set_text(string, coordx, coordy, fontSize):
     font = pygame.font.Font('freesansbold.ttf', fontSize)
-    text = font.render(string, True, (255, 255, 255))
+    text = font.render(string, True, culoriFundal[culoareFundalIndex][2])
     textRect = text.get_rect()
     textRect.center = (coordx, coordy)
     return text, textRect
@@ -39,7 +72,7 @@ def current_milli_time():
 
 
 def draw_particle(x, y, i):
-    pygame.draw.circle(screen, particlePos[i][4], (x, y), 5)
+    pygame.draw.circle(screen, particlePos[i][4], (x, y), marimeParticula)
 
 
 for i in range(len(particlePos)):
@@ -103,6 +136,23 @@ while running:
             if event.key == pygame.K_l:
                 for i in range(len(particlePos)):
                     particlePos[i][3] = 0
+            if event.key == pygame.K_o:
+                culoareFundalIndex = culoareFundalIndex + 1
+                if culoareFundalIndex > 6:
+                    culoareFundalIndex = 0
+            if event.key == pygame.K_p:
+                marimeParticula = marimeParticula + 1
+                if marimeParticula > 10:
+                    marimeParticula = 1
+            if event.key == pygame.K_i:
+                culoareParticulaIndex = culoareParticulaIndex + 1
+                if culoareParticulaIndex > 6:
+                    culoareParticulaIndex = 0
+            if event.key == pygame.K_h:
+                if toggleHelp:
+                    toggleHelp = False
+                else:
+                    toggleHelp = True
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 flagAttract = True
@@ -119,7 +169,6 @@ while running:
             particlePos[i][2] = normalize_angle(particlePos[i][2] + 20)
 
     # todo slingshot cu mausul gen click trage si apoi lanseaza in directia aia
-    # todo culori si marimi particule si fundal
 
     # jucarie maus
     if flagAttract:
@@ -199,18 +248,68 @@ while running:
     while particleNum < len(particlePos):
         particlePos.pop()
 
-    screen.fill((50, 50, 50))
+    if culoriParticule[culoareParticulaIndex][0] == "Rainbow" and flagCuloare == False:
+        flagCuloare = True
+        for i in range(len(particlePos)):
+            particlePos[i][4] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+    if culoriParticule[culoareParticulaIndex][0] == "Rainbow":
+        flagCuloare = True
+    else:
+        flagCuloare = False
+
+    if culoriParticule[culoareParticulaIndex][0] != "Rainbow":
+        for i in range(len(particlePos)):
+            particlePos[i][4] = culoriParticule[culoareParticulaIndex][1]
+
+    if culoriParticule[culoareParticulaIndex][0] == "Rave":
+        for i in range(len(particlePos)):
+            particlePos[i][4] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+
+    if culoriFundal[culoareFundalIndex][0] == "Rainbow":
+        if r == 255 and pasRGB == 0:
+            rDir = 1
+            gDir = 2
+            pasRGB = 1
+        if g == 255 and pasRGB == 1:
+            rDir = 0
+            gDir = 1
+            pasRGB = 2
+        if r == 0 and pasRGB == 2:
+            bDir = 2
+            rDir = 1
+            pasRGB = 3
+        if b == 255 and pasRGB == 3:
+            bDir = 1
+            gDir = 0
+            pasRGB = 4
+        if g == 0 and pasRGB == 4:
+            gDir = 1
+            rDir = 2
+            pasRGB = 0
+
+        if rDir == 2:
+            r = r + 1
+        elif rDir == 0:
+            r = r - 1
+
+        if gDir == 2:
+            g = g + 1
+        elif gDir == 0:
+            g = g - 1
+
+        if bDir == 2:
+            b = b + 1
+        elif bDir == 0:
+            b = b - 1
+        screen.fill((r, g, b))
+    elif culoriFundal[culoareFundalIndex][0] == "Desen":
+        pass
+    else:
+        screen.fill(culoriFundal[culoareFundalIndex][1])
 
     for i in range(len(particlePos)):
         # coliziune cu pretii
-        if particlePos[i][0] > 1600 or particlePos[i][1] > 1000 or particlePos[i][0] < -200 or particlePos[i][1] < -200:
-            print(i)
-            print(particlePos[i][0])
-            print(particlePos[i][1])
-            print(particlePos[i][2])
-            print(particlePos[i][3])
-            print()
-
         bounceXmax = 1400
         bounceXmin = 0
         bounceYmax = 800
@@ -281,7 +380,6 @@ while running:
     totalText = set_text(textInertie, 90, 38, 20)
     screen.blit(totalText[0], totalText[1])
 
-
     directieK = "Error"
     if unghiJucarieK == 0 or unghiJucarieK == 360:
         directieK = "Dreapta"
@@ -298,18 +396,24 @@ while running:
 
     totalText = set_text("Culoare Particule: ", 295, 14, 20)
     screen.blit(totalText[0], totalText[1])
-    totalText = set_text("Multi-Color", 295, 38, 20)
+    totalText = set_text(str(culoriParticule[culoareParticulaIndex][0]), 295, 38, 20)
     screen.blit(totalText[0], totalText[1])
 
     totalText = set_text("Culoare Fundal: ", 500, 14, 20)
     screen.blit(totalText[0], totalText[1])
-    totalText = set_text("Gri", 500, 38, 20)
+    totalText = set_text(str(culoriFundal[culoareFundalIndex][0]), 500, 38, 20)
     screen.blit(totalText[0], totalText[1])
 
     totalText = set_text("Marime Particule: ", 700, 14, 20)
     screen.blit(totalText[0], totalText[1])
-    totalText = set_text("5", 700, 38, 20)
+    totalText = set_text(str(marimeParticula), 700, 38, 20)
     screen.blit(totalText[0], totalText[1])
+    totalText = set_text("Ajutor - H", 1345, 785, 20)
+    screen.blit(totalText[0], totalText[1])
+
+    if toggleHelp:
+        helpScreen = pygame.image.load('help.png')
+        screen.blit(helpScreen, (200, 200))
 
     pygame.display.update()
 pygame.quit()
