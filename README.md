@@ -27,3 +27,7 @@ Particle SImulator game built in Python!
 ##### K - Launches all the particles in the direction indicated in the top menu.
 
 ##### L - Freezes the particles. (Use the A key or the mouse to start them up again)
+
+### All the keys can be combined!
+
+### Have fun!
