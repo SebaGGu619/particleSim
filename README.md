@@ -28,6 +28,4 @@ Particle SImulator game built in Python!
 
 ##### L - Freezes the particles. (Use the A key or the mouse to start them up again)
 
-### All the keys can be combined!
-
-### Have fun!
+### All the keys can be combined! Have fun!
