@@ -493,5 +493,5 @@ while running:
 # Inchidere window
 pygame.quit()
 
-# Confirmarea sfarsitului programului la sitemul de operare
+# Confirmarea sfarsitului programului la sistemul de operare
 exit(0)
